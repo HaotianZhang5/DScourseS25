@@ -1,0 +1,4 @@
+/home/ouecon011/DScourseS25/ProblemSets/PS4
+Mon Feb 17 17:15:03 CST 2025
+export LSCRATCH=/lscratch/23452226
+srun: error: c193: task 0: Exited with exit code 1
