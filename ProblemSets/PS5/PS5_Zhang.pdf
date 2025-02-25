@@ -1,0 +1,14 @@
+PS5_Zhang
+Haotian Zhang
+February 2025
+
+1. Data from the website which doesn't have an API
+
+The data provides insights into the global adoption of plug-in electric vehicles (PEVs) in 2023, highlighting cumulative sales, annual sales, market share, and the percentage of cars in use that are electric. China leads the market with the highest number of PEVs, followed by Europe and the United States, while Norway stands out with an exceptional 93 percent market share, indicating widespread adoption. Regions like Germany, the United Kingdom, and California also show strong market shares, suggesting favorable policies and infrastructure for EV adoption. Despite these advances, the global percentage of PEVs in use remains relatively low at 3.2 percent, pointing to significant growth potential. 
+
+For I am going to buy a car recently, so these data may help me somtimes.
+
+
+2. Data from the website which has an API (Quandl)
+
+The dataset appears to contain information about vehicles, specifically motorcycles and off-road vehicles, including details such as the make, model, model year, subclass (e.g., snowmobiles), state, number of policies, average value, parent company, ticker symbol, and stock exchange. The data spans different years, with brands like Yamaha being represented. What interests me about this data is its potential use in understanding market trends for specific vehicle types, particularly in relation to insurance policies and valuations across different states.
