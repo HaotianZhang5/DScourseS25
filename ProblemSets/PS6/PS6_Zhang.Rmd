@@ -1,0 +1,105 @@
+---
+title: "PS6_Zhang"
+output: html_document
+date: "2025-03-11"
+---
+
+```{r}
+library("ggplot2")
+# Read the file 
+Data <- read.csv("Bank.csv",stringsAsFactors = TRUE)
+# Clean the data
+Data[Data == "#N/A"] <- NA
+
+Data <- na.omit(Data)
+
+# Delete the variaty "Experience"
+Data = Data[,-3]
+head(Data)
+```
+```{r}
+# Bar chart to explain the importance
+ggplot(data = Data) + 
+  geom_bar(mapping = aes(x = Personal.Loan))
+ggplot(data =Data) + 
+  geom_bar(mapping = aes(x = Personal.Loan, y=after_stat(prop), group=1))
+```
+```{r}
+# 
+table(Data$Education)
+Data$Education <- factor(Data$Education, levels = c(1,2,3), labels = c("Undergrad", "Graduate", "Advanced/Professional"))
+head(Data)
+
+ggplot(data = Data) + 
+  geom_bar(mapping = aes(x = Personal.Loan, fill=Education))
+
+ggplot(data = Data, mapping = aes(x = Personal.Loan, fill=Education)) + 
+  geom_bar(position="fill")
+```
+```{r}
+Data$CD.Account <- factor(Data$CD.Account, levels = c(0,1), labels = c("WithCertificate", "WithoutCertificate"))
+head(Data)
+ggplot(data = Data, mapping = aes(x = Personal.Loan, fill=CD.Account)) + 
+  geom_bar(position="fill")+
+  facet_wrap(~ Education)
+```
+```{r}
+Data$Income <- as.numeric(as.character(Data$Income))
+Data$IncomeCLass <- cut(Data$Income,breaks = c(-Inf, 52,156, Inf),labels = c("Low", "Medium", "High"),right = FALSE)
+
+ggplot(data = Data, mapping = aes(x = Personal.Loan, fill=IncomeCLass)) + 
+  geom_bar(position="fill")
+```
+```{r}
+# 
+Data$CD.Account <- factor(Data$CD.Account, levels = c(0,1), labels = c("WithCertificate", "WithoutCertificate"))
+head(Data)
+ggplot(data = Data, mapping = aes(x = Personal.Loan, fill=IncomeCLass)) + 
+  geom_bar(position="fill")+
+  facet_wrap(~ Education)
+```
+```{r}
+Data$WithLoan <- factor(Data$Personal.Loan, levels = c(0,1), labels = c("No", "Yes"))
+ggplot(data = Data, mapping = aes(x =Family, fill=WithLoan)) + 
+  geom_bar(position="fill")
+```
+```{r}
+# install.packages("ggplot2")
+# install.packages("ggmap")
+library(ggplot2)
+library(ggmap)
+library(maps)
+cali_map <- map_data("state", region = "california")
+Data$Loan <- factor(Data$Personal.Loan, levels = c(0,1), labels = c("NoLoan", "WithLoan"))
+New_Data <-subset(Data,Data$Longitude != "#N/A" & Data$Latitude!= "#N/A" )                    
+head(New_Data)                   
+library("dplyr")                
+x <- as.character(New_Data$Longitude)
+x <- as.numeric(x)
+y <- as.character(New_Data$Latitude)
+y <- as.numeric(y)
+ggplot() +
+  geom_polygon(data = cali_map, aes(x = long, y = lat, group = group), fill = "white", color = "grey") +
+  geom_point(data = New_Data, aes(x = x, y = y, color = Loan), size = 5) +
+  scale_color_manual(values = c(rgb(1,0,0, alpha=0.25), rgb(0,0,1, alpha=0.8))) +
+  labs(title = "Geographical Heat Map of Personal Loan Distribution",
+       x = "Longitude", y = "Latitude") +
+  theme_minimal()
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
