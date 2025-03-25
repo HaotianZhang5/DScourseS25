@@ -1,0 +1,83 @@
+---
+title: "PS7_Zhang"
+output: html_document
+date: "2025-03-19"
+---
+
+```{r}
+#
+library(tidyverse)
+#install.packages("mice")
+library(mice)
+#install.packages("modelsummary")
+library(modelsummary)
+library(readr)
+#Read the csv file
+df <- read_csv("C:/Users/zhan0236/OneDrive - University of Oklahoma/Desktop/Spring 2025/ECON-5253 Data Science for Economists/PS7/wages.csv")
+
+# Drop observations where either hgc or tenure are missing
+df_clean <- na.omit(df, select = c(hgc, tenure))
+summary(df_clean)
+```
+```{r}
+# Create summary table in Latex
+datasummary_skim(df)
+```
+
+```{r}
+# Calculate the missing rate of the logwage variable
+missing_rate_logwage <- sum(is.na(df$logwage)) / nrow(df)
+
+# Print the missing rate
+missing_rate_logwage
+```
+```{r}
+# Estimate the regression using only complete cases
+model_complete <- lm(logwage ~ hgc + college + tenure + I(tenure^2) + age + married, data =df_clean)
+summary(model_complete)
+```
+```{r}
+# Perform mean imputation to fill in missing log wages
+mean_logwage <- mean(df$logwage, na.rm = TRUE)
+df_mean <- df %>% 
+  mutate(logwage = ifelse(is.na(logwage), mean_logwage, logwage))
+
+# Estimate the regression with mean imputation
+model_mean <- lm(logwage ~ hgc + college + tenure + I(tenure^2) + age + married, data = df_mean)
+summary(model_mean)
+```
+```{r}
+# Impute missing log wages as their predicted values from the complete cases regression
+predicted_logwage <- predict(model_complete, newdata =df)
+df_pred <- df %>% 
+  mutate(logwage = ifelse(is.na(logwage), predicted_logwage, logwage))
+
+# Estimate the regression with predicted imputation
+model_predicted <- lm(logwage ~ hgc + college + tenure + I(tenure^2) + age + married, data =df_pred)
+summary(model_predicted)
+```
+```{r}
+# Perform multiple imputation using the mice package
+# Insert missing values
+df$logwage[sample(1:nrow(df), 10)] <- NA
+df$hgc[sample(1:nrow(df), 10)] <- NA
+df$tenure[sample(1:nrow(df), 10)] <- NA
+# Impute with `mice`
+df_mice <- mice(df, m = 5, printFlag = FALSE)
+# Estimate models
+mod <- list()
+mod[['Listwise deletion']] <- lm(logwage ~ hgc + college + tenure + I(tenure^2) + age + married, df)
+mod[['Mice']] <- with(df_mice, lm(logwage ~ hgc + college + tenure + I(tenure^2) + age + married)) 
+# Pool results
+mod[['Mice']] <- mice::pool(mod[['Mice']])
+# Summarize
+modelsummary(mod)
+```
+
+
+```{r}
+# Create a list of models
+models <- list("Complete Cases" = model_complete, "Mean Imputation" = model_mean, "Predicted Imputation" = model_predicted, "Multiple Imputation" = mod[['Mice']])
+modelsummary(models)
+modelsummary(models, output = "latex")
+```
