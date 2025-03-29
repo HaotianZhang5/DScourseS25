@@ -1,0 +1,86 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{float}    % <-- Add this line to enable [H]
+
+\title{PS8\_Zhang}
+\author{Haotian Zhang}
+\date{March 2025}
+
+\begin{document}
+
+\maketitle
+
+\section{Answer for question 5}
+\begin{table}[H]
+\centering
+\caption{Comparison of True and Estimated $\beta$ Values using the closed-form solution}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Coefficient} & \textbf{True $\beta$} & \textbf{Estimated $\hat{\beta}_{OLS}$} \\
+\hline
+$\beta_1$ & 1.50  & 1.5010518 \\
+$\beta_2$ & -1.00 & -1.0008296 \\
+$\beta_3$ & -0.25 & -0.2516480 \\
+$\beta_4$ & 0.75  & 0.7490406 \\
+$\beta_5$ & 3.50  & 3.5005531 \\
+$\beta_6$ & -2.00 & -2.0008185 \\
+$\beta_7$ & 0.50  & 0.4987148 \\
+$\beta_8$ & 1.00  & 1.0028269 \\
+$\beta_9$ & 1.25  & 1.2465102 \\
+$\beta_{10}$ & 2.00 & 2.0010012 \\
+\hline
+\end{tabular}
+\end{table}
+
+The OLS estimate $\hat{\beta}_{OLS}$, computed using the closed-form solution, is very close to the true value of $\beta$. Each estimated coefficient differs from its corresponding true value by only a very small amount, typically less than 0.01.
+
+Because the sample size is large ($N = 100{,}000$), the law of large numbers ensures that the OLS estimator converges closely to the true parameter values.
+
+\section{Answer for question 7}
+\begin{table}[H]
+\centering
+\caption{Comparison of $\hat{\beta}_{OLS}$ using gradient descent, L-BFGS algorithm and Nelder-Mead algorithm}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Coefficient} & \textbf{Gradient Descent} & \textbf{L-BFGS algorithm} & \textbf{Nelder-Mead algorithm} \\
+\hline
+$\beta_1$ & 1.5010518 & 1.5010518 & 1.1770684 \\
+$\beta_2$ & -1.0008296 & -1.0008296 & -0.9164661 \\
+$\beta_3$ & -0.2516480 & -0.2516480 & -0.1601914 \\
+$\beta_4$ & 0.7490406 & 0.7490406 & 0.9990248 \\
+$\beta_5$ & 3.5005531 & 3.5005531 & 3.0740315 \\
+$\beta_6$ & -2.0008185 & -2.0008185 & -2.2658981 \\
+$\beta_7$ & 0.4987148 & 0.4987148 & 0.5961485 \\
+$\beta_8$ & 1.0028269 & 1.0028269 & 0.8454130 \\
+$\beta_9$ & 1.2465102 & 1.2465102 & 1.4415925 \\
+$\beta_{10}$ & 2.0010012 & 2.0010012 & 2.0331941 \\
+\hline
+\end{tabular}
+\end{table}
+The results from gradient descent and L-BFGS algorithm are nearly identical to the true $\beta$, confirming their reliability. Nelder-Mead algorithm, while still converging to a reasonable result, performs worse in this context and is less accurate.
+
+\section{Answer for question 9}
+\begin{table}[H]
+\centering
+\caption{Comparison of True $\beta$ and Estimated $\hat{\beta}_{OLS}$ Using \texttt{lm()}}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Coefficient} & \textbf{True $\beta$} & \texttt{lm()} Estimate \\
+\hline
+$\beta_1$ & 1.50  & 1.5010518 \\
+$\beta_2$ & -1.00 & -1.0008296 \\
+$\beta_3$ & -0.25 & -0.2516480 \\
+$\beta_4$ & 0.75  & 0.7490406 \\
+$\beta_5$ & 3.50  & 3.5005531 \\
+$\beta_6$ & -2.00 & -2.0008185 \\
+$\beta_7$ & 0.50  & 0.4987148 \\
+$\beta_8$ & 1.00  & 1.0028269  \\
+$\beta_9$ & 1.25  & 1.2465102 \\
+$\beta_{10}$ & 2.00 & 2.0010012 \\
+\hline
+\end{tabular}
+\end{table}
+
+Overall, these estimates are identical to those obtained from the closed-form solution, gradient descent, and the L-BFGS algorithm. This confirms that the \texttt{lm()} estimates in R are very close to the ground truth and are a fast and convenient method.
+
+\end{document}
