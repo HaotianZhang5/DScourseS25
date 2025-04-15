@@ -1,0 +1,326 @@
+---
+title: "PS10_Zhang"
+output: pdf_document
+date: "2025-04-12"
+---
+
+```{r}
+# Set up the environment
+library(rpart)      
+# install.packages("e1071")
+library(e1071)       
+#install.packages("kknn") 
+#install.packages("nnet") 
+#install.packages("kernlab") 
+#install.packages("dials") 
+library(kknn)        
+library(nnet)       
+library(kernlab)     
+library(dials) 
+# install.packages("readr")
+library(readr)
+```
+
+
+```{r}
+# Set Seed
+set.seed(100)
+# Load the data
+income <- read_csv("https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data", col_names = FALSE)
+names(income) <- c("age","workclass","fnlwgt","education","education.num","marital.status","occupation","relationship","race","sex","capital.gain","capital.loss","hours","native.country","high.earner")
+head(income)
+```
+```{r}
+## Clean up the data
+# Drop unnecessary columns
+library(magrittr)
+library(forcats)
+income %<>% select(-native.country, -fnlwgt, education.num)
+# Make sure continuous variables are formatted as numeric
+income %<>% mutate(across(c(age,hours,education.num,capital.gain,capital.loss), as.numeric))
+# Make sure discrete variables are formatted as factors
+income %<>% mutate(across(c(high.earner,education,marital.status,race,workclass,occupation,relationship,sex), as.factor))
+# Combine levels of factor variables that currently have too many levels
+income %<>% mutate(education = fct_collapse(education,
+                                            Advanced    = c("Masters","Doctorate","Prof-school"), 
+                                            Bachelors   = c("Bachelors"), 
+                                            SomeCollege = c("Some-college","Assoc-acdm","Assoc-voc"),
+                                            HSgrad      = c("HS-grad","12th"),
+                                            HSdrop      = c("11th","9th","7th-8th","1st-4th","10th","5th-6th","Preschool") 
+                                           ),
+                   marital.status = fct_collapse(marital.status,
+                                            Married      = c("Married-civ-spouse","Married-spouse-absent","Married-AF-spouse"), 
+                                            Divorced     = c("Divorced","Separated"), 
+                                            Widowed      = c("Widowed"), 
+                                            NeverMarried = c("Never-married")
+                                           ), 
+                   race = fct_collapse(race,
+                                            White = c("White"), 
+                                            Black = c("Black"), 
+                                            Asian = c("Asian-Pac-Islander"), 
+                                            Other = c("Other","Amer-Indian-Eskimo")
+                                           ), 
+                   workclass = fct_collapse(workclass,
+                                            Private = c("Private"), 
+                                            SelfEmp = c("Self-emp-not-inc","Self-emp-inc"), 
+                                            Gov     = c("Federal-gov","Local-gov","State-gov"), 
+                                            Other   = c("Without-pay","Never-worked","?")
+                                           ), 
+                   occupation = fct_collapse(occupation,
+                                            BlueCollar  = c("?","Craft-repair","Farming-fishing","Handlers-cleaners","Machine-op-inspct","Transport-moving"), 
+                                            WhiteCollar = c("Adm-clerical","Exec-managerial","Prof-specialty","Sales","Tech-support"), 
+                                            Services    = c("Armed-Forces","Other-service","Priv-house-serv","Protective-serv")
+                                           )
+                  )
+head(income)
+```
+```{r}
+# tidymodels time!
+library(rsample)
+income_split <- initial_split(income, prop = 0.8)
+income_train <- training(income_split)
+income_test  <- testing(income_split)
+```
+```{r}
+## logistic regression
+print('Starting LOGIT')
+# set up the task and the engine
+library(parsnip)
+tune_logit_spec <- logistic_reg(
+  penalty = tune(), # tuning parameter
+  mixture = 1       # 1 = lasso, 0 = ridge
+) %>% 
+  set_engine("glmnet") %>%
+  set_mode("classification")
+
+# define a grid over which to try different values of the regularization parameter lambda
+lambda_grid <- grid_regular(penalty(), levels = 50)
+
+# 3-fold cross-validation
+rec_folds <- vfold_cv(income_train, v = 3)
+
+# Workflow
+library(workflows)
+rec_wf <- workflow() %>%
+  add_model(tune_logit_spec) %>%
+  add_formula(high.earner ~ education + marital.status + race + workclass + occupation + relationship + sex + age + capital.gain + capital.loss + hours)
+
+# Tuning results
+library(tune)
+rec_res <- rec_wf %>%
+  tune_grid(
+    resamples = rec_folds,
+    grid = lambda_grid
+  )
+```
+
+
+```{r}
+# what is the best value of lambda?
+top_acc  <- show_best(rec_res, metric = "accuracy")
+best_acc <- select_best(rec_res, metric = "accuracy")
+final_logit_lasso <- finalize_workflow(rec_wf,
+                                 best_acc
+                                )
+print('*********** LOGISTIC REGRESSION **************')
+logit_test <- last_fit(final_logit_lasso,income_split) %>%
+         collect_metrics()
+
+logit_test %>% print(n = 1)
+top_acc %>% print(n = 1)
+
+# combine results into a nice tibble (for later use)
+logit_ans <- top_acc %>% slice(1)
+logit_ans %<>% left_join(logit_test %>% slice(1),by=c(".metric",".estimator")) %>%
+               mutate(alg = "logit") %>% select(-starts_with(".config"))
+```
+```{r}
+## tree model
+# Model spec
+tune_tree_spec <- decision_tree(
+  min_n = tune(),
+  tree_depth = tune(),
+  cost_complexity = tune()
+) %>%
+  set_engine("rpart") %>%
+  set_mode("classification")
+# Grid: manually defined over the three parameters
+tree_parm_df1 <- tibble(cost_complexity = seq(0.001, 0.2, by = 0.05))
+tree_parm_df2 <- tibble(min_n = seq(10, 100, by = 10))
+tree_parm_df3 <- tibble(tree_depth = seq(5, 20, by = 5))
+tree_grid <- full_join(tree_parm_df1, tree_parm_df2, by = character()) %>%
+  full_join(tree_parm_df3, by = character())
+# Cross-validation folds (reuse if already defined)
+rec_folds <- vfold_cv(income_train, v = 3)
+# Workflow
+tree_wf <- workflow() %>%
+  add_model(tune_tree_spec) %>%
+  add_formula(high.earner ~ education + marital.status + race + workclass + occupation + relationship + sex + age + capital.gain + capital.loss + hours)
+# Tune the model
+library(yardstick)
+tree_res <- tree_wf %>%
+  tune_grid(
+    resamples = rec_folds,
+    grid = tree_grid,
+    metrics = metric_set(accuracy)
+  )
+# Get best result based on accuracy
+top_tree_acc <- show_best(tree_res, metric = "accuracy")
+best_tree_acc <- select_best(tree_res, metric = "accuracy")
+# Finalize the workflow with best hyperparameters
+final_tree_wf <- finalize_workflow(tree_wf, best_tree_acc)
+# Evaluate on the test set
+tree_test <- last_fit(final_tree_wf, income_split) %>%
+  collect_metrics()
+# Print results
+tree_test %>% print(n = 1)
+top_tree_acc %>% print(n = 1)
+# Combine into results tibble
+tree_ans <- top_tree_acc %>%
+  slice(1) %>%
+  left_join(tree_test %>% slice(1), by = c(".metric", ".estimator")) %>%
+  mutate(alg = "tree") %>%
+  select(-starts_with(".config"))
+```
+```{r}
+## neural net
+# Model spec
+tune_nnet_spec <- mlp(
+  hidden_units = tune(),  # number of neurons in the hidden layer
+  penalty = tune()        # regularization penalty (like lambda)
+) %>%
+  set_engine("nnet") %>%
+  set_mode("classification")
+# Define tuning grid: combine hidden_units and penalty
+nnet_parm_df1 <- tibble(hidden_units = seq(1, 10))
+lambda_grid   <- grid_regular(penalty(), levels = 10)
+nnet_grid     <- full_join(nnet_parm_df1, lambda_grid, by = character())
+# use 3-fold cross-validation folds
+rec_folds <- vfold_cv(income_train, v = 3)
+# Workflow
+nnet_wf <- workflow() %>%
+  add_model(tune_nnet_spec) %>%
+  add_formula(high.earner ~ education + marital.status + race + workclass + occupation + relationship + sex + age + capital.gain + capital.loss + hours)
+# Add a control object to track progress and errors
+ctrl <- control_grid(save_pred = TRUE, verbose = TRUE, allow_par = FALSE)
+# Tune the model
+nnet_res <- nnet_wf %>%
+  tune_grid(
+    resamples = rec_folds,
+    grid = nnet_grid,
+    metrics = metric_set(accuracy),
+    control = ctrl
+  )
+# Get best parameters
+top_nnet_acc  <- show_best(nnet_res, metric = "accuracy")
+best_nnet_acc <- select_best(nnet_res, metric = "accuracy")
+# Finalize the workflow
+final_nnet_wf <- finalize_workflow(nnet_wf, best_nnet_acc)
+# Evaluate on test set
+nnet_test <- last_fit(final_nnet_wf, income_split) %>%
+  collect_metrics()
+# Output results
+print('*********** NEURAL NETWORK **************')
+nnet_test %>% print(n = 1)
+top_nnet_acc %>% print(n = 1)
+# Store results
+nnet_ans <- top_nnet_acc %>%
+  slice(1) %>%
+  left_join(nnet_test %>% slice(1), by = c(".metric", ".estimator")) %>%
+  mutate(alg = "nnet") %>%
+  select(-starts_with(".config"))
+```
+```{r}
+## knn
+# Model spec
+tune_knn_spec <- nearest_neighbor(
+  neighbors = tune()  # number of neighbors
+) %>%
+  set_engine("kknn") %>%
+  set_mode("classification")
+# Grid: range of neighbor values
+knn_grid <- tibble(neighbors = seq(1, 30))
+# Workflow
+knn_wf <- workflow() %>%
+  add_model(tune_knn_spec) %>%
+  add_formula(high.earner ~ education + marital.status + race + workclass + occupation + relationship + sex + age + capital.gain + capital.loss + hours)
+# Add a control object to track progress and errors
+ctrl <- control_grid(save_pred = TRUE, verbose = TRUE, allow_par = FALSE)
+# Tune the model
+knn_res <- knn_wf %>%
+  tune_grid(
+    resamples = rec_folds,
+    grid = knn_grid,
+    metrics = metric_set(accuracy),
+    control = ctrl
+  )
+# Get best hyperparameter
+top_knn_acc  <- show_best(knn_res, metric = "accuracy")
+best_knn_acc <- select_best(knn_res, metric = "accuracy")
+# Finalize workflow
+final_knn_wf <- finalize_workflow(knn_wf, best_knn_acc)
+# Evaluate on the test set
+knn_test <- last_fit(final_knn_wf, income_split) %>%
+  collect_metrics()
+# Print results
+knn_test %>% print(n = 1)
+top_knn_acc %>% print(n = 1)
+# Store results
+knn_ans <- top_knn_acc %>%
+  slice(1) %>%
+  left_join(knn_test %>% slice(1), by = c(".metric", ".estimator")) %>%
+  mutate(alg = "knn") %>%
+  select(-starts_with(".config"))
+```
+```{r}
+## SVM
+# Model spec
+tune_svm_spec <- svm_rbf(
+  cost = tune(), 
+  rbf_sigma = tune()
+) %>% 
+  set_engine("kernlab") %>%
+  set_mode("classification")
+# Define tuning grid
+svm_parm_df1 <- tibble(cost = c(2^(-2), 2^(-1), 2^0, 2^1, 2^2, 2^10))
+svm_parm_df2 <- tibble(rbf_sigma = c(2^(-2), 2^(-1), 2^0, 2^1, 2^2, 2^10))
+svm_grid     <- full_join(svm_parm_df1, svm_parm_df2, by = character())
+# Cross-validation folds 
+rec_folds <- vfold_cv(income_train, v = 3)
+# Workflow
+svm_wf <- workflow() %>%
+  add_model(tune_svm_spec) %>%
+  add_formula(high.earner ~ education + marital.status + race + workclass + occupation + relationship + sex + age + capital.gain + capital.loss + hours)
+# control object to track progress
+ctrl <- control_grid(save_pred = TRUE, verbose = TRUE)
+# Tune the model
+svm_res <- svm_wf %>%
+  tune_grid(
+    resamples = rec_folds,
+    grid = svm_grid,
+    metrics = metric_set(accuracy),
+    control = ctrl
+  )
+# Get best results
+top_svm_acc  <- show_best(svm_res, metric = "accuracy")
+best_svm_acc <- select_best(svm_res, metric = "accuracy")
+# Finalize workflow
+final_svm_wf <- finalize_workflow(svm_wf, best_svm_acc)
+# Evaluate on test set
+svm_test <- last_fit(final_svm_wf, income_split) %>%
+  collect_metrics()
+# Output results
+svm_test %>% print(n = 1)
+top_svm_acc %>% print(n = 1)
+# Store results
+svm_ans <- top_svm_acc %>%
+  slice(1) %>%
+  left_join(svm_test %>% slice(1), by = c(".metric", ".estimator")) %>%
+  mutate(alg = "svm") %>%
+  select(-starts_with(".config"))
+```
+```{r}
+# Combine all results into a table
+final_results <- bind_rows(logit_ans, tree_ans, nnet_ans, knn_ans, svm_ans)
+final_results
+```
