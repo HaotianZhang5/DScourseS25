@@ -1,0 +1,155 @@
+\documentclass{beamer}
+
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{xcolor}
+
+\definecolor{crimson}{RGB}{159,0,0}
+\definecolor{blackout}{RGB}{0,0,0}
+
+\setbeamercolor{frametitle}{fg=crimson}
+\setbeamercolor{title}{fg=crimson}
+\setbeamercolor{subsection in head/foot}{fg=crimson}
+\setbeamercolor{item}{fg=crimson}
+\setbeamercolor{subitem}{fg=crimson}
+\setbeamercolor{label}{fg=black}
+\setbeamercolor{block title}{fg=crimson}
+
+\title{Identifying High-Potential Customers for Personal Loans: Predictive Insights for Banking}
+\author{Haotian Zhang}
+\institute{University of Oklahoma}
+\date{March 2025}
+
+\begin{document}
+
+\setbeamertemplate{background canvas}{
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=south west, inner sep=0pt, xshift=25pt, yshift=25pt] at (current page.south west) {
+      \includegraphics[width=100pt, height=100pt]{Seal.png}
+    };
+    \node[anchor=south east, inner sep=0pt, xshift=-50pt, yshift=25pt] at (current page.south east) {
+      \includegraphics[height=100pt, keepaspectratio]{Logo.png}
+    };
+  \end{tikzpicture}
+}
+
+\frame{\titlepage}
+
+\setbeamertemplate{background canvas}{
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[anchor=south east, inner sep=0pt, xshift=-10pt, yshift=10pt] at (current page.south east) {
+      \includegraphics[height=30pt, keepaspectratio]{Logo.png}
+    };
+  \end{tikzpicture}
+}
+
+\begin{frame}
+\frametitle{Introduction}
+\begin{itemize}
+  \item Thera Bank aims to convert deposit customers into personal loan customers.
+  \item Personal loans improve profitability compared to deposits.
+  \item Predictive modeling can optimize customer targeting and marketing.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Data Collection and Description}
+\begin{itemize}
+  \item Dataset: 5,000 Thera Bank customers (4373 after clean).
+  \item Variables: Age, Income, Family, Credit Card Average Spending (CCAvg), Education, CD Account, etc.
+  \item Removed Experience due to high correlation with Age.
+\includegraphics[width=0.5\textwidth]{Variables.png}\includegraphics[width=0.5\textwidth]{heatmap.png}
+  
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Visualization}
+\begin{itemize}
+  \item Personal Loan Distribution. (Only ~10\% of customers accepted a loan.)
+  \item Income-based segmentation: \textbf{No low-income} customers accepted loans.
+\end{itemize}
+\vspace{0.3cm}
+\begin{minipage}{0.5\textwidth}
+    \includegraphics[width=\textwidth]{Pic2.png}
+\end{minipage}%
+\begin{minipage}{0.5\textwidth}
+    \includegraphics[width=\textwidth]{Inc.png}
+    \includegraphics[width=\textwidth]{IncClass.png}
+\end{minipage}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Methodology}
+\begin{itemize}
+  \item \textbf{Model Selection:}
+  \begin{itemize}
+    \item \textbf{Logistic Regression}: Chosen for transparency, interpretability, and strong performance in structured financial datasets.
+    \item \textbf{Tree Model}: Selected for rule-based segmentation and easy interpretation of customer groups.
+    \item \textbf{K-Nearest Neighbors (KNN)}: Rejected due to scalability issues, preprocessing needs, and lack of explainability.
+  \end{itemize}
+  \item \textbf{Model Building:}
+  \begin{itemize}
+    \item Logistic regression: Specified a logistic regression model with a small L1 penalty (0.01) to approximate ordinary logistic regression, setting the mixing parameter to 1 for pure lasso regularization.
+    \item Tree model: Set the cost\_complexity to 0.001 to balance depth and overfitting, while retaining the default settings for min\_n and tree\_depth for potential future adjustment.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Findings: Logistic Regression}
+\begin{itemize}
+  \item Significant predictors: Income, Family size, CCAvg, Education, CD Account.
+  \item Higher income and graduate education increase likelihood.
+  \item Online banking and Credit Card ownership negatively associated.
+  \item Logistic Regression Accuracy: 95.05\%
+\includegraphics[width=0.5\textwidth]{Log_Reg.png}\includegraphics[width=0.5\textwidth]{CM_Log.png}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Findings: Tree Model}
+\begin{itemize}
+  \item Key splits: Income, CCAvg, CD Account, Education.
+  \item Clear rule-based segmentation.
+  \item Tree Model Accuracy: 98.02\%
+\includegraphics[width=0.5\textwidth]{Tree.png}\includegraphics[width=0.5\textwidth]{CM_Tree.png}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Conclusion and Implications}
+\begin{itemize}
+  \item Predictive models help the bank identify target customers and adjust marketing strategies.
+  \item People with the following features are more likely to buy personal loans:
+  \begin{itemize}
+    \item Higher income
+    \item Larger family size
+    \item Higher spending on credit cards
+    \item Higher level of education (graduate or advanced degree)
+    \item Certificate of deposit (CD) account ownership
+  \end{itemize}
+  \item Improve personal loan conversion rates, optimize resource allocation, and increase bank profitability.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{How Did AI Contribute to This Research?}
+\small
+This research utilized AI, specifically ChatGPT 4o, for:
+
+\begin{itemize}
+  \item Code development and troubleshooting in RStudio and LaTeX.
+  \item Internet searches for academic research\footnote{All AI-found research was verified for accuracy by the researcher.}.
+  \item Advice on methodologies and argument structures.
+  \item Assisting in basic mathematics and data cleaning tasks.
+\end{itemize}
+
+The use of AI is equated to any other research tool, ensuring the paper's academic integrity. Critical intellectual processes were conducted by the human research team.
+\end{frame}
+
+\end{document}

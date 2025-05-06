@@ -1,0 +1,273 @@
+\documentclass[12pt]{article}
+\usepackage{graphicx} 
+\usepackage[utf8]{inputenc}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{setspace}
+\doublespacing
+\usepackage{parskip}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage[nolists, tablesfirst, nomarkers]{endfloat}
+\usepackage{array}
+\usepackage[table]{xcolor}
+\usepackage{geometry}
+\usepackage{amsmath} 
+\geometry{margin=1in}
+
+
+\title{Identifying High-Potential Customers for Personal Loans: Predictive Insights for Banking}
+\author{Haotian Zhang}
+\date{March 2025}
+
+\begin{document}
+\doublespacing
+\maketitle
+
+
+\section{Abstract}
+In today’s competitive banking environment, identifying high-potential customers for personal loans is essential for optimizing marketing strategies and improving profitability. This study develops and evaluates predictive models to estimate the likelihood of existing liability customers converting into personal loan holders. Using demographic, financial, and behavioral data from Thera Bank’s customer base, we apply logistic regression and classification tree models to uncover the key factors influencing loan acceptance. Both models demonstrate strong predictive accuracy, with the classification tree achieving 98.02\% accuracy. Key predictors include income, education level, family size, credit card spending, and certificate of deposit account ownership. The findings provide actionable insights for targeted marketing, enabling the bank to allocate promotional resources efficiently and tailor offers to customers with the highest probability of conversion. This research contributes to the growing application of interpretable machine learning techniques in financial marketing and customer segmentation.
+\section{Introduction}
+In today’s rapidly evolving and highly competitive financial environment, banks face mounting pressure to innovate their customer engagement strategies, diversify revenue streams, and enhance operational efficiency \citep{Krasnikov2009TheIndustry}. A critical challenge for many financial institutions is optimizing the composition of their customer portfolios—specifically, striking an effective balance between liability customers, who maintain deposits, and asset customers, who generate interest income through lending products \citep{Nikiel2002CUSTOMERBANKING}. Thera Bank, a U.S.-based, growth-oriented retail bank, epitomizes this challenge. Currently, the majority of its customers are liability holders with varying levels of deposits. While these customers contribute to funding stability, their direct impact on revenue is relatively limited when compared to asset customers, who are more directly linked to income-generating loan products \citep{Machauer2001SegmentationAttitudes}.
+
+In response to this structural imbalance, Thera Bank has embarked on a strategic shift focused on expanding its asset customer base. Specifically, the bank is pursuing the conversion of existing liability customers into personal loan holders—an approach that not only leverages established customer relationships, thereby reducing acquisition costs, but also has the potential to significantly increase customer lifetime value \citep{Moro2014ATelemarketing}. Central to this strategy is the need to determine which liability customers are most likely to respond positively to personal loan offers. This question lies at the heart of the present research, which aims to help the bank identify high-potential target customers in order to more effectively tailor its marketing strategies and optimize promotional resource allocation. Accurately predicting these conversion probabilities is essential not only for optimizing marketing spend and improving response rates, but also for increasing the return on promotional investments \citep{Fenton2007VisualisingChange:}.
+
+Initial results from Thera Bank’s targeted campaigns have been encouraging. Over the past year, the bank recorded a personal loan conversion rate exceeding 9\%, a figure that surpasses internal benchmarks and validates the promise of targeted marketing. Building on this momentum, the retail marketing team is now seeking more advanced methods to enhance campaign precision and scale outreach. The team contends that machine learning offers a robust and scalable framework for data-driven targeting—one capable of accurately predicting which customers are most likely to adopt a loan product \citep{Alaraj2021ModellingNetworks}.
+
+To this end, the current study develops a predictive classification model that estimates the likelihood of liability customers converting to personal loan users, based on variables such as demographics, financial behavior, and previous engagement with the bank. By uncovering patterns that distinguish likely converters from non-responders, the model is designed to support more efficient customer segmentation and tailored marketing interventions. In addition to enhancing campaign performance, this approach also advances personalization efforts by aligning offers with customer needs and preferences.
+
+Broadly speaking, this research contributes to the expanding literature on predictive analytics in financial services by demonstrating how data-driven modeling can inform customer segmentation and marketing strategy in real-world banking contexts. The findings are relevant not only to practitioners seeking operational insights but also to scholars exploring the applications of machine learning in consumer financial behavior, marketing analytics, and strategic decision-making.
+
+\section{Literature Review}
+In an era of increasing data availability and technological advancement, retail banks are undergoing a paradigm shift toward data-driven marketing and decision-making \citep{He2022ImpactStudy}. Predictive analytics has become central to understanding customer behavior, particularly in customer acquisition, product cross-selling, and loan adoption \citep{Boustani2024ImprovingNetworks}. One critical challenge lies in identifying which liability customers, who contribute deposit-based capital, are most likely to convert into asset customers through products such as personal loans \citep{Chang2024TowardsStudy}. Accurate prediction of such conversions can significantly enhance marketing efficiency, reduce acquisition costs, and increase customer lifetime value \citep{Ulug2025OptimizedProgramming}.
+
+\subsection{Predictive Modeling in Financial Services}
+The application of predictive analytics in retail banking has been widely studied in areas such as credit scoring, churn prediction, and loan default forecasting \citep{Singh2024InvestigatingManagement}. However, research focusing on loan product adoption from existing customers—especially liability to asset transition—is relatively nascent \citep{Vaduva2024ImprovingTechniques}. Traditional marketing practices, such as rule-based segmentation and demographic targeting, are increasingly giving way to machine learning techniques that leverage complex, non-linear customer behaviors \citep{deWaal2024ConsumersLearning}.
+
+In the context of personal loan marketing, predictive modeling allows banks to create highly targeted campaigns by identifying customers with the highest likelihood of responding to offers \citep{Rahman2024TRANSFORMINGLEARNING}. As noted by \cite{BharathiS2022AnCustomers}, the integration of customer-level behavioral features (e.g., transaction patterns, credit card usage) has dramatically improved classification accuracy in banking environments. These developments underline the importance of choosing the right algorithm—not only for predictive performance, but also for interpretability, scalability, and deployability \citep{Al-Quraishi2025BridgingPrediction}.
+
+\subsection{Logistic Regression}
+Logistic regression is among the most frequently used models in both marketing and credit risk prediction due to its interpretability and statistical foundation\citep{Chen2023InterpretableRisk}. As a generalized linear model, logistic regression is ideal for binary classification tasks, such as predicting whether a customer will accept a personal loan \citep{deWaal2024ConsumersLearning}. It estimates the log-odds of the dependent variable as a linear combination of independent features such as income, education, or CD account ownership.
+
+Numerous studies have demonstrated the effectiveness of logistic regression in financial decision-making \citep{AlonsoRobisco2022MeasuringPrediction}. \cite{Valluri2022CustomerTechniques} applied logistic regression to model churn among auto loan customers and reported robust results with clear coefficients useful for business decisions. Similarly, \cite{deWaal2024ConsumersLearning} applied logistic regression to P2P lending data and noted its strong performance on structured datasets with well-labeled inputs. Despite its linear assumptions, logistic regression provides valuable insights into feature significance, allowing marketers and analysts to interpret the influence of specific attributes like income level or family size on loan acceptance likelihood.
+
+\subsection{Tree Models}
+Classification trees are a form of decision tree model designed for supervised learning tasks where the response variable is categorical—making them particularly suited for binary classification problems such as predicting personal loan adoption \citep{Momparler2016BankingApproach}. These models divide the data space into disjoint regions using a tree-like structure that recursively applies decision rules on input variables, such as income, education, or account ownership \citep{Safarkhani2021ImprovingTree}. In the context of retail banking, classification trees not only provide predictions but also yield interpretable insights, enabling marketers to understand customer segments at a glance. For example, a tree might reveal rules such as: "If income > \$70,000 and CD account = Yes, then likelihood of loan acceptance is high."
+
+Their interpretability makes classification trees highly attractive in banking applications. As \cite{DeCaigny2024HybridAnalysis} show, classification trees can reveal both main effects and feature interactions without extensive preprocessing or transformation of variables, making them suitable for marketing departments with limited data science capacity. Recent studies have reaffirmed the practical power of tree-based classifiers. For instance, \cite{Vaduva2024ImprovingTechniques} demonstrated that decision trees could effectively detect churn risk in banks with high accuracy and minimal calibration. Likewise, \cite{Joung2023InterpretableReviews} emphasized that classification trees serve as both predictive and descriptive tools for segmenting customers based on behavioral patterns, empowering personalized marketing and retention strategies.
+
+\subsection{K-Nearest Neighbors (KNN)}
+K-Nearest Neighbors (KNN) is a non-parametric, instance-based learning algorithm that predicts outcomes by comparing new data points with the most similar cases in the training set \citep{Joung2023InterpretableReviews}. In marketing applications, KNN can identify customer profiles similar to past converters and infer likely behaviors \citep{Zaki2024PredictiveSubscriptions}. However, KNN suffers from scalability issues and a lack of model transparency, which limits its practical utility in strategic marketing \citep{Murugan2023Large-scaleStrategies}.
+\cite{Alborzi2016UsingMethod} observed that while KNN achieved moderate accuracy in predicting credit scoring outcomes, it was computationally expensive on larger datasets and difficult to explain to non-technical audiences. In a more recent study, \cite{Kruthika2024ComparativeSector} compared KNN with decision tree and logistic regression models in the context of bank loan prediction and found that while KNN performed adequately in smaller datasets, it was consistently outperformed by decision trees and logistic regression in terms of accuracy and business deployment suitability.
+Another drawback of KNN is its sensitivity to feature scaling, which can distort distance-based calculations \citep{HusseinSayed2024MachineBalancing}. This requires preprocessing steps such as normalization or standardization, which may introduce additional complexity in real-time systems \citep{Ahsan2021EffectPerformance}.
+
+\subsection{Model Selection}
+In banking environments—especially those governed by compliance and regulatory standards—interpretability is not optional. Stakeholders from legal, compliance, and executive teams require transparent models that can justify why a customer was targeted or denied an offer\citep{Rudin2019StopInstead} . In this regard, logistic regression and decision trees offer significant advantages over models like KNN, neural networks, or support vector machines, which are typically considered black-box approaches.
+
+As \cite{Bucker2022TransparencyScoring}  emphasize, machine learning models deployed in regulated financial environments must strike a balance between predictive accuracy and explainability to foster stakeholder trust and ensure compliance with regulatory standards. A model that accurately predicts conversions but cannot explain why certain customers were targeted fails to support business decision-making and long-term marketing strategy \citep{Bucker2022TransparencyScoring} . Moreover, model explainability facilitates continuous refinement through feature testing and campaign feedback, enabling marketing teams to optimize strategies over time \citep{Melsom2022ExplainableBanking} .
+
+\section{Data}
+\subsection{Data Exploration}
+
+The variables included in the dataset are listed in Table 1, and the correlation heat map of the independent variables is shown in Figure 2.1. This heat map illustrates the strength of pairwise correlations among all variables, where darker shades represent stronger correlations and lighter shades indicate weaker ones. Notably, the plot reveals a very high correlation between ‘Age’ and ‘Experience’, highlighted by the darkest cell in the matrix. This strong relationship likely reflects redundancy, as individuals with more experience also tend to be older.
+
+To prevent multicollinearity and ensure more stable model estimation, ‘Experience’ is excluded from further analysis. The remaining variables exhibit only weak to moderate correlations, as indicated by the lighter shades in the heat map, suggesting that multicollinearity is not a major concern among them.
+\begin{table}[htbp]
+\centering
+\renewcommand{\arraystretch}{1.5} % Adds vertical space between rows
+\begin{tabular}{|p{4cm}|p{10cm}|}
+\hline
+\textbf{Variable Name} & \textbf{Variable Definition} \\
+\hline
+ID & Customer ID. \\
+\hline
+Age & Customer’s age in completed years \\
+\hline
+Experience & Number of years of professional experience \\
+\hline
+Income & Annual income of the customer (in thousand dollars) \\
+\hline
+ZIP Code & Home Address ZIP code \\
+\hline
+Family & Family size of the customer \\
+\hline
+CCAvg & Average spending on credit cards per month (in thousand dollars) \\
+\hline
+Mortgage & Value of house mortgage if any (in thousand dollars) \\
+\hline
+Education & Education Level 1: Undergrad \newline Education Level 2: Graduate \newline Education Level 3: Advanced/Professional \\
+\hline
+Personal\_Loan & Did this customer accept the personal loan offered in the last campaign? \\
+\hline
+Securities\_Account & Does the customer have securities account with the bank? \\
+\hline
+CD\_Account & Does the customer have a certificate of deposit (CD) account with the bank? \\
+\hline
+Online & Do customers use internet banking facilities? \\
+\hline
+CreditCard & Does the customer use a credit card issued by any other Bank (excluding All life Bank)? \\
+\hline
+\end{tabular}
+\caption{Variable Descriptions Used in the Dataset}
+\label{tab:appendix1}
+\end{table}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{heatmap.png}
+    \caption{Correlation Matrix}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsection{Visualization}
+
+Figure 2 illustrates the distribution of the dependent variable—Personal Loan—across the sample of 5,000 existing bank customers. The panel on the left displays the absolute count of customers who have accepted (value = 1) versus those who have not accepted (value = 0) a personal loan. The panel on the right expresses this distribution as proportions of the total sample.
+
+From the charts, it is evident that a significant majority—approximately 4,000 customers—have not opted for a personal loan, whereas only around 400 customers, or roughly 10\% of the total population, have done so. This pronounced imbalance in class distribution highlights a key challenge in predicting loan uptake: customer adoption of personal loans is relatively rare.
+
+This insight underscores the importance of building a predictive model that can accurately identify the minority segment of likely loan adopters. From a marketing strategy perspective, such a model would be highly valuable for targeted campaigns, allowing the bank to direct promotional efforts and resources toward customers who exhibit the highest probability of conversion. Consequently, the outcomes of our research have direct implications for enhancing loan acquisition strategies and optimizing customer outreach, potentially improving loan portfolio growth while minimizing wasted marketing expenditure.
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Pic2.png}
+    \caption{Personal Loan Distribution}
+    \label{fig:enter-label}
+\end{figure}
+
+To better understand customers’ likelihood of accepting personal loans, we first categorize them by income level, as income is a core demographic factor influencing financial decision-making and risk assessment. As shown in Table 2, we adopt the classification standards used by the U.S. Census Bureau to divide annual income into three tiers: High Income (greater than \$156,000), Medium Income (between \$52,000 and \$156,000), and Low Income (less than \$52,000).
+
+This segmentation allows us to examine loan acceptance behavior across distinct income brackets, which is essential for deriving actionable insights for customer targeting. From a marketing strategy standpoint, such classification is not only useful for refining predictive models but also for tailoring messaging and offers according to income-based personas. By aligning our analysis with widely recognized benchmarks, our findings gain both interpretive clarity and external validity, which enhances the practical relevance of our recommendations for the bank’s campaign design.
+\begin{table}[ht]
+\centering
+\rowcolors{2}{blue!10}{white}
+\arrayrulecolor{white}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|>{\bfseries}m{4cm}|m{6cm}|}
+\rowcolor{blue!50}
+\textcolor{white}{\textbf{Income Class}} & \textcolor{white}{\textbf{Income (in thousand dollars)}} \\
+High Income   & Greater than 156 \\
+Medium Income & [52, 156] \\
+Low Income    & Less than 52 \\
+\end{tabular}
+\caption{Income Classification by Income Level}
+\end{table}
+
+Figure 3 visualizes the distribution of income classes among customers who have and have not accepted personal loans. The graph clearly indicates that customers in the Low Income category (in red) are entirely absent from the group that has accepted personal loans (right bar). Instead, the loan-accepting segment is composed exclusively of customers from the Medium (green) and High (blue) income brackets. This pattern suggests that income level plays a critical role in a customer's likelihood of qualifying for or choosing to utilize personal loan products.
+
+From a marketing and financial segmentation perspective, this insight highlights two key implications. First, customers in the Medium and High income classes are likely perceived as more creditworthy due to their stable income and greater financial capacity. This enhances their eligibility and appeal for personal loan offers, aligning with standard risk-based pricing and approval strategies used in consumer banking. Second, these customer segments may also exhibit stronger loan-driven consumption and investment behavior, driven by needs such as property acquisition, automobile purchases, or business ventures. As such, they represent a more receptive and actionable target audience for personalized marketing campaigns promoting loan products.
+
+From a bank perspective, by focusing efforts on customers within the Medium-to-High income ranges, banks can more efficiently allocate marketing resources and improve the conversion rate of loan offers. Simultaneously, the exclusion of low-income customers in actual loan uptake suggests a need for either alternative financial products or tailored financial education to address their barriers to loan access.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Inc.png}
+    \caption{Proportion of Income Class by Personal Loan Acceptance}
+    \label{fig:enter-label}
+\end{figure}
+
+Figure 4 examines customer acceptance of personal loans segmented by both education level and income class, offering a multidimensional perspective on financial decision-making. The faceted bar charts reveal a consistent trend across educational categories—Undergraduate, Graduate, and Advanced/Professional—wherein customers with medium and high incomes (green and blue bars) are more likely to take personal loans than those with low income (red).
+
+Crucially, this figure provides additional nuance to our prior findings: it demonstrates that educational attainment amplifies the influence of income on personal loan acceptance. Among customers with Advanced/Professional degrees, a significantly larger proportion of personal loan users belong to the high-income class, compared to those with only undergraduate degrees. 
+
+From a marketing strategy standpoint, this intersection of education and income offers a powerful basis for target segmentation and message personalization. Financial institutions can tailor product offerings and communications for highly educated, high-income individuals by emphasizing sophisticated financial planning, investment leverage, or lifestyle enhancement. Conversely, for lower education or income segments, marketing efforts may need to address perceived barriers such as eligibility concerns or financial insecurity.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Inc & Edu.png}
+    \caption{Personal Loan by Education and Income}
+    \label{fig:enter-label}
+\end{figure}
+
+\section{Methods}
+\subsection{Model Selection}
+Logistic regression and classification tree models are particularly well-suited for marketing and credit risk prediction due to their interpretability, regulatory compliance, and business relevance. Logistic regression, as a generalized linear model, enables clear interpretation of feature effects on binary outcomes, such as loan acceptance, and is widely adopted for its transparency and ease of deployment on structured data.
+
+Classification trees, likewise, offer intuitive, rule-based segmentation that helps marketers identify actionable patterns (e.g., ``If income greater than \$70{,}000 and CD account is Yes, then high likelihood of acceptance'') without extensive preprocessing. These models also capture feature interactions and support strategic decision-making in non-technical environments.
+
+In contrast, K-Nearest Neighbors (KNN) poses notable drawbacks. It scales poorly with large datasets, requires intensive preprocessing (e.g., normalization), and lacks explainability---making it ill-suited for high-stakes financial applications where decisions must be justified to legal and compliance stakeholders. While useful in small-scale settings, KNN consistently underperforms relative to logistic regression and tree-based models in both accuracy and business applicability.
+
+Therefore, logistic regression and classification trees are preferred for contexts demanding both predictive power and model transparency.
+\subsection{Model Building}
+\subsubsection{Logistic Regression}
+To predict the likelihood of a customer accepting a personal loan, we developed a logistic regression model using \textsf{R}. The modeling process consists of several key steps. First, we specify a logistic regression model and set the L1 regularization penalty (lasso) to a small value of 0.01, indicating minimal regularization to approximate ordinary logistic regression. The mixing parameter is set to 1 to enforce pure lasso regularization, although the lower penalty actually makes the model similar to a standard logistic model.
+
+The logistic regression model estimates the probability that a customer accepts a personal loan using the following formula (1):
+
+\begin{equation}
+\text{log-odds}(\text{Personal Loan} = 1) = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \cdots + \beta_p X_p
+\end{equation}
+
+where $\text{log-odds}(\text{Personal Loan} = 1)$ represents the logarithm of the odds of accepting a personal loan, $\beta_0$ is the intercept, and $\beta_1, \beta_2, \dots, \beta_p$ are the coefficients associated with the predictor variables $X_1, X_2, \dots, X_p$, all estimated from the training data.
+
+We then formalize the logistic regression formula that relates the dependent variable Personal.Loan to a set of independent variables, including Age, Income, Family, CCAvg, Education, Mortgage, Securities.Account, CD.Account, Online, and CreditCard. The model is trained using a training subset of the data, which is prepared by an initial random split into training and test sets.
+
+\subsubsection{Tree Model}
+We built a classification tree model using \textsf{R} to predict the likelihood of a customer accepting a personal loan. In developing the model, we considered three important hyperparameters: min\_n, tree\_depth, and cost\_complexity. Themin\_n parameter controls the minimum number of observations required for a node before attempting a split. The tree\_depth parameter limits the maximum number of layers, or splits, in the tree. Setting an appropriate tree depth helps prevent the tree from becoming too complex and memorizing noise in the data, thereby avoiding overfitting. Finally, the cost\_complexity parameter controls the overall complexity of the tree by penalizing additional splits. Lower cost\_complexity values allow the tree to grow larger and deeper by encouraging more splits, while higher values encourage earlier pruning of branches.
+
+During our modeling process, we paid special attention to tuning the cost\_complexity parameter to balance model complexity and prediction accuracy. After evaluating the cross-validation error behavior, we set cost\_complexity to 0.001, which allowed the tree to grow deep enough to capture important patterns without causing overfitting. The min\_n and tree\_depth parameters were retained at their default settings in the rpart package but may be adjusted in future extensions of the model.
+
+\section{Findings}
+In this section, we will present the output and performance of each model. It is primarily done through the confusion matrix to evaluate and compare their performance.
+\subsection{Logistic Regression}
+The results of the logistic regression analysis (Figure 5) reveal several important predictors of personal loan acceptance. Variables such as Income, Family, CCAvg, Education2, Education3, CD.Account1, and CreditCard1 were statistically significant at the 0.05 level or better. Higher income levels (Income) and higher average credit card spending (CCAvg) were associated with an increased likelihood of accepting a personal loan. Family size (Family) was also positively associated with loan acceptance. Educational attainment, particularly having a graduate degree (Education3), substantially increased the probability of accepting a loan compared to the baseline education group. Moreover, holding a certificate of deposit account (CD.Account1) strongly increased the odds of loan acceptance. Conversely, having an online account (Online1) or owning a credit card (CreditCard1) was negatively associated with loan acceptance, suggesting that these customers might already have access to alternative financial services and thus lower demand for personal loans.
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Log_Reg.png}
+    \caption{The Results of the Logistic Regression Analysis}
+    \label{fig:enter-label}
+\end{figure}
+
+The fitted logistic regression model demonstrated strong predictive performance. As shown in the confusion matrix (Table 3), the model correctly classified 1180 true negatives and 67 true positives, while making 9 false positive errors and 56 false negative errors. The relatively low number of false positives suggests that the model is conservative in predicting positive cases (loan acceptance), which is desirable in financial contexts where over-approving loans may incur significant risk. Overall, the model achieved a high level of predictive accuracy (95.05\%) and identified meaningful customer characteristics associated with personal loan acceptance.
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|}
+\hline
+\rowcolor{blue!30}
+ & $\hat{Y}=0$ & $\hat{Y}=1$ \\
+\hline
+$Y=0$ & 1180 (TN) & 9 (FP) \\
+\hline
+$Y=1$ & 56 (FN) & 67 (TP) \\
+\hline
+\end{tabular}
+\caption{Confusion Matrix for Logistic Regression Model}
+\label{tab:confusion_matrix}
+\end{table}
+
+\subsection{Tree Module}
+The results of the classification tree analysis (Figure 6) reveal several important predictors of personal loan acceptance. Key variables such as Income, CCAvg, CD.Account, Education, and Family played critical roles in segmenting customers by their likelihood of accepting a personal loan. Higher income levels (Income) and higher average credit card spending (CCAvg) were associated with an increased likelihood of loan acceptance, as indicated by multiple early splits in the tree. Customers holding a certificate of deposit account (CD.Account) also showed a significantly higher propensity to accept a personal loan. Additionally, education level (Education), particularly having a graduate degree, was a strong differentiator among customer groups. Family size (Family) further contributed to distinguishing customers' likelihood to accept a loan, with smaller families associated with higher acceptance rates in certain branches of the tree. The combination of these variables allowed the model to capture complex interactions that influence loan acceptance decisions.
+\begin{figure}
+    \centering
+    \includegraphics[width=1\linewidth]{Tree.png}
+    \caption{Tree Module}
+    \label{fig:enter-label}
+\end{figure}
+
+The fitted classification tree model demonstrated strong predictive performance. As shown in the confusion matrix (Table 4), the model correctly classified 1182 true negatives and 104 true positives, while making 7 false positive errors and 19 false negative errors. The relatively small number of misclassifications indicates that the tree model was effective in distinguishing between customers who were likely versus unlikely to accept a personal loan. In particular, the very low number of false positives suggests that the model is conservative in predicting loan acceptance, minimizing the financial risk associated with incorrectly approving unqualified customers. Overall, the classification tree achieved a high level of accuracy (98.02\%) and provided interpretable decision rules that can guide marketing and risk management strategies.
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|}
+\hline
+\rowcolor{blue!30}
+ & $\hat{Y}=0$ & $\hat{Y}=1$ \\
+\hline
+$Y=0$ & 1182 (TN) & 19 (FP) \\
+\hline
+$Y=1$ & 7 (FN) & 104 (TP) \\
+\hline
+\end{tabular}
+\caption{Confusion Matrix for Classification Tree Model}
+\label{tab:confusion_matrix}
+\end{table}
+
+\section{Conclusion}
+Based on the model results, we analyzed some management issues, the core purpose of which is to predict whether indebted customers will purchase personal loans, and use these models to help banks identify target customers and adjust marketing strategies. This not only helps banks better convert indebted customers into personal loan customers, but also optimizes the bank's resource allocation and market positioning.
+
+Combining the positive correlation coefficient of logistic regression and the results of the classification tree, we can identify the key factors that affect customer decisions. We found that ``income,'' ``education,'' ``family,'' ``average credit card consumption amount (CCAvg),'' and ``certificate of deposit account'' (CD\_Account) are the five most important variables. To be more specific, people with higher income, larger family size, higher credit card consumption amount, higher education level, and holding a certificate of deposit account (CD) are more likely to apply for personal loans. This finding provides clear guidance for our marketing strategy for specific customer groups.
+
+Therefore, in the next marketing campaign for indebted customers, banks should pay more attention to this group. This precise marketing strategy can not only improve marketing efficiency, but also meet the needs of specific customer groups more accurately, thereby increasing the conversion rate of personal loan products. Through such a strategy, banks can use resources more efficiently and provide customers with services that better meet their needs, while also creating greater profit margins for the banks themselves.
+
+\bibliographystyle{apalike}  
+\bibliography{references}
+\end{document}
